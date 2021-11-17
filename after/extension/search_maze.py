@@ -6,16 +6,20 @@ from multiprocessing import Process
 
 class Maze:
     
-    def __init__(self, turt, grid):
-        this.steps = 0
-        this.turt = turt
-        this.grid = grid
+    def __init__(self, turt, grid,window, x_offset = -150,y_offset = 200,tile_size = 50):
+        self.steps = 0
+        self.turt = turt
+        self.grid = grid
+        self.window = window
+        self.x_offset = x_offset
+        self.y_offset = y_offset
+        self.tile_size = 50
 
-    def draw_grid(self, x_pos, y_pos, tile_size):
+    def draw_grid(self,x_pos,y_pos):
         ''' draws a grid at x_pos, y_pos with a specific tile_size '''
 
         # turn off tracer for fast drawing
-        window.tracer(False)
+        self.window.tracer(False)
         
         colors = { 
             'X':['grey',"black"],
@@ -30,25 +34,25 @@ class Maze:
         # colors.update({'X':['grey','black']})
         
         # move turtle to initial drawing position
-        this.turt.up()
-        this.turt.goto(x_pos, y_pos)
-        this.turt.down()
+        self.turt.up()
+        self.turt.goto(x_pos, y_pos)
+        self.turt.down()
         
         # go over every cell in the grid
-        for row in range(len(this.grid)):
-            for col in range(len(this.grid[row])):
+        for row in range(len(self.grid)):
+            for col in range(len(self.grid[row])):
                 
                 # move turtle to the position of the cell in the grid
-                this.turt.up()
-                this.turt.goto(x_pos + col * tile_size, y_pos -row * tile_size)
-                this.turt.down()
+                self.turt.up()
+                self.turt.goto(x_pos + col * self.tile_size, y_pos -row * self.tile_size)
+                self.turt.down()
 
                 # color cell according to maze
-                this.turt.color(colors[grid[row][col]][0],colors[grid[row][col]][1])
-                this.turt.stamp()
+                self.turt.color(colors[self.grid[row][col]][0],colors[self.grid[row][col]][1])
+                self.turt.stamp()
             
             # turn tracer back on
-            window.tracer(True)
+        self.window.tracer(True)
 
 
     def find_start(self):
@@ -57,56 +61,56 @@ class Maze:
         '''
 
         # go over every cell in the grid
-        for row in range(len(this.grid)):
-            for col in range(len(this.grid[0])):
+        for row in range(len(self.grid)):
+            for col in range(len(self.grid[0])):
 
                 # cell at row, col is 'S' return row and col as a tuple
-                if this.grid[row][col] == 'S':
+                if self.grid[row][col] == 'S':
                     return (row, col)
     
-    def search_from(grid, row, col):
-    ''' recursive function to search the grid for the end (E) '''
+    def search_from(self, row, col):
+        ''' recursive function to search the grid for the end (E) '''
 
-        this.steps += 1
+        self.steps += 1
 
         # make sure row and col are valid points on the grid
-        if row < 0 or col < 0 or row == len(grid) or col == len(grid[0]):
+        if row < 0 or col < 0 or row == len(self.grid) or col == len(self.grid[0]):
             # return False if not valid
             return False
 
         # check that the grid cell at row and col is not obstacle, tried, or deadend
-        if grid[row][col] == 'X' or grid[row][col] == 'T' or grid[row][col] == 'D':
+        if self.grid[row][col] == 'X' or self.grid[row][col] == 'T' or self.grid[row][col] == 'D':
             # return False if obstacle, tried, or deadend
             return False
 
         # If end is found at row, col return True
-        if grid[row][col] == 'E':
+        if self.grid[row][col] == 'E':
             return True
         
         # If the cell at row, col is not the start cell, mark the cell as tried (T)
-        if grid[row][col] != 'S':
-            grid[row][col] = 'T'
+        if self.grid[row][col] != 'S':
+           self. grid[row][col] = 'T'
 
         # draw the grid
-        draw_grid(grid, turt, x_offset, y_offset, tile_size)
+        self.draw_grid(self.x_offset,self.y_offset)
 
         # pause the program for a short duration, try 0.5 and 0.01 seconds
         time.sleep(0.25)
 
         # recursively search differnt directions adjacent to current row, col (up, down, left, right)
-        found = (search_from(grid, row-1, col)
-                or search_from(grid, row+1, col)
-                or search_from(grid, row, col-1)
-                or search_from(grid, row, col+1)
+        found = (self.search_from(row-1, col)
+                or self.search_from( row+1, col)
+                or self.search_from( row, col-1)
+                or self.search_from( row, col+1)
                 )
 
         # if any of the 4 directions returns True, mark the cel at row, col as part of the path and return True
-        if found and grid[row][col] != 'S':
-            grid[row][col] = 'P'
+        if found and self.grid[row][col] != 'S':
+            self.grid[row][col] = 'P'
             return True
         # else, if the cell at row, col is not the start cell (S), mark it as a deadend
-        elif grid[row][col] != 'S':
-            grid[row][col] = 'D'
+        elif self.grid[row][col] != 'S':
+            self.grid[row][col] = 'D'
 
 
 def read_grid(file_name):
@@ -166,13 +170,13 @@ def main():
     steps = 0
 
     # read maze file and create playground grid
-    playground = read_grid("maze2.txt")
-
+    playground = read_grid("maze1.txt")
+    m = Maze(turt,playground,window)
     # find start position
-    row, col = find_start(playground)
+    row, col = m.find_start()
 
     # call the search function, it takes the grid, row, column, and steps
-    search_from(playground, row, col)
+    m.search_from(row, col)
 
     # create a list of tuples representing the path
     path = []
@@ -185,13 +189,13 @@ def main():
     print('path length:', len(path))
 
     # draw the final grid
-    draw_grid(playground, turt, x_offset, y_offset, tile_size)
+    m.draw_grid(x_offset, y_offset)
     
     # pause the grid drawing for 4 seconds
     time.sleep(4)
 
     # print the number of steps taken to find the path
-    print("number of steps taken to reach answer:", steps)
+    print("number of steps taken to reach answer:", m.steps)
     
 
 
