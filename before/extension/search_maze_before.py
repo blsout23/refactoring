@@ -1,7 +1,7 @@
 
 import turtle
 import time
-from playsound import playsound
+#from playsound import playsound
 from multiprocessing import Process
 
 # create a turtle and a window for drawing
@@ -22,12 +22,14 @@ if __name__ == "__main__":
     # create an int variable for counting steps
     steps = 0
 
-
 def draw_grid(grid, turt, x_pos, y_pos, tile_size):
     ''' draws a grid at x_pos, y_pos with a specific tile_size '''
 
     # turn off tracer for fast drawing
     window.tracer(False)
+    
+    colors = {'X':['grey',"black"],'S':['grey',"yellow"],'E':['grey',"red"],'P':['grey',"royalblue"],'T':['grey',"light blue"],'D':['gainsboro',"gray"],'0':['grey',"white"]}
+    colors.update({'X':['grey','black']})
     
     # move turtle to initial drawing position
     turt.up()
@@ -44,46 +46,8 @@ def draw_grid(grid, turt, x_pos, y_pos, tile_size):
             turt.down()
 
             # if the cell is an obstacle (X) draw a black dot
-            if grid[row][col] == 'X':
-                #turt.dot(tile_size-5, "Black")
-                turt.color('grey', "black")
-                turt.stamp()
-            
-            # if the cell is the start drawing position (S) draw a yellow dot
-            elif grid[row][col] == 'S':
-                #turt.dot(tile_size-5, "yellow")
-                turt.color('grey', "yellow")
-                turt.stamp()
-            
-            # if the cell is the End position (E) draw a Red dot
-            elif grid[row][col] == 'E':
-                #turt.dot(tile_size-5, "red")
-                turt.color('grey', "red")
-                turt.stamp()
-
-            # if the cell is part of a path (P) draw a royalblue dot
-            elif grid[row][col] == 'P':
-                #turt.dot(tile_size-5, "royalblue")
-                turt.color('grey', "royalblue")
-                turt.stamp()
-
-            # if the cell has been tried before (T) draw a light blue dot
-            elif grid[row][col] == 'T':
-                #turt.dot(tile_size-5, "light blue")
-                turt.color('grey', "light blue")
-                turt.stamp()
-
-            # if the cell is part of a deadend (D) draw a gray dot
-            elif grid[row][col] == 'D':
-                #turt.dot(tile_size-5, "gray")
-                turt.color('gainsboro', "gray")
-                turt.stamp()
-            
-            # else draw a white dot
-            else:
-                #turt.dot(tile_size-5, "white")
-                turt.color( 'grey', "white")
-                turt.stamp()
+            turt.color(colors[grid[row][col]][0],colors[grid[row][col]][1])
+            turt.stamp()
     
     # turn tracer back on
     window.tracer(True)
@@ -134,6 +98,22 @@ def read_grid(file_name):
     # return the grid
     return grid
 
+def validPoint(grid,row,col):
+    if row < 0 or col < 0 or row == len(grid) or col == len(grid[0]):
+        # return False if not valid
+        return False
+    return True
+
+def isObstacle(grid,row,col):
+    if grid[row][col] == 'X' or grid[row][col] == 'T' or grid[row][col] == 'D':
+        # return False if obstacle, tried, or deadend
+        return False
+    return True
+
+def endOfRow(grid,row,col):
+    if grid[row][col] == 'E':
+        return True
+    return False
 
 def search_from(grid, row, col):
     ''' recursive function to search the grid for the end (E) '''
@@ -143,17 +123,17 @@ def search_from(grid, row, col):
     steps += 1
 
     # make sure row and col are valid points on the grid
-    if row < 0 or col < 0 or row == len(grid) or col == len(grid[0]):
+    if validPoint(grid,row,col)==False:
         # return False if not valid
         return False
 
     # check that the grid cell at row and col is not obstacle, tried, or deadend
-    if grid[row][col] == 'X' or grid[row][col] == 'T' or grid[row][col] == 'D':
+    if isObstacle(grid,row,col)==False:
         # return False if obstacle, tried, or deadend
         return False
 
     # If end is found at row, col return True
-    if grid[row][col] == 'E':
+    if endOfRow(grid,row,col):
         return True
     
     # If the cell at row, col is not the start cell, mark the cell as tried (T)
@@ -182,10 +162,10 @@ def search_from(grid, row, col):
         grid[row][col] = 'D'
     
 
-def background_music():
+"""def background_music():
     ''' plays tetris music in the background '''
 
-    playsound('Tetris.mp3')    
+    playsound('Tetris.mp3')  """  
 
 
 def main():
@@ -225,8 +205,8 @@ def main():
 
 if __name__ == "__main__":
 
-    p = Process(target=background_music, args=())
-    p.start()
+    #p = Process(target=background_music, args=())
+    #p.start()
     main()
-    p.terminate()
+    #p.terminate()
 
